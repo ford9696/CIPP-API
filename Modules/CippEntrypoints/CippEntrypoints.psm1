@@ -2,22 +2,12 @@ using namespace System.Net
 
 function Receive-CippHttpTrigger {
     Param($Request, $TriggerMetadata)
-
+    #force path to CIPP-API
+    Set-Location (Get-Item $PSScriptRoot).Parent.Parent.FullName
+    Write-Host (Get-Item $PSScriptRoot).Parent.Parent.FullName
     $APIName = $TriggerMetadata.FunctionName
 
-    $FunctionVerbs = @{
-        'Get'    = '^(?<APIName>List.+$)'
-        'Update' = '^(?<APIName>Edit.+$)'
-        'New'    = '^(?<APIName>Add.+$)'
-        'Invoke' = '^(?<APIName>Exec.+$)'
-    }
-
-    foreach ($FunctionVerb in $FunctionVerbs.Keys) {
-        if ($APIName -match $FunctionVerbs.$FunctionVerb) {
-            $FunctionName = '{0}-{1}' -f $FunctionVerb, $Matches.APIName
-            break
-        }
-    }
+    $FunctionName = 'Invoke-{0}' -f $APIName
 
     $HttpTrigger = @{
         Request         = $Request
@@ -30,7 +20,7 @@ function Receive-CippHttpTrigger {
 function Receive-CippQueueTrigger {
     Param($QueueItem, $TriggerMetadata)
     $APIName = $TriggerMetadata.FunctionName
-
+    Set-Location (Get-Item $PSScriptRoot).Parent.Parent.FullName
     $FunctionName = 'Push-{0}' -f $APIName
     $QueueTrigger = @{
         QueueItem       = $QueueItem
